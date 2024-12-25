@@ -16,6 +16,7 @@ Simple example application to read data from the TMP102 temperature sensor with 
 #define SD_SCK_PIN 2
 
 #define BOOT_BT_PIN 9
+#define LED_PIN 10
 
 #define TMP102_REG_TEMPERATURE 0x00
 #define TMP102_REG_CONFIG 0x01
@@ -36,6 +37,7 @@ void setup() {
   Serial.begin(115200);
 
   pinMode(BOOT_BT_PIN, INPUT_PULLUP);
+  pinMode(LED_PIN, OUTPUT);
 
   spiSD.begin(SD_SCK_PIN, SD_MISO_PIN, SD_MOSI_PIN, SD_CS_PIN);
   pinMode(spiSD.pinSS(), OUTPUT);
@@ -64,11 +66,10 @@ void loop() {
         if (currentBootButtonState == HIGH) { // If button released
           // Start / stop temperature recording
           if (!writeFileEnable) {
-            writeFileEnable = true;
-
             temp_log_file = SD.open("/temp.txt", FILE_WRITE, true);
             if (temp_log_file) {
               writeFileEnable = true;
+              digitalWrite(LED_PIN, HIGH);
               
               // Write legend to file
               if (!temp_log_file.println("Timestamp (s); Temperature (°C)")) {
@@ -81,6 +82,7 @@ void loop() {
             }
           } else {
             writeFileEnable = false;
+            digitalWrite(LED_PIN, LOW);
             
             temp_log_file.close();
 
